@@ -14,10 +14,12 @@ WORKDIR /usr/src/app
 
 # copy all sources to container
 COPY --chown=node:node . /usr/src/app
+RUN chown node:node /usr/src/app
 
-# install dependencies
+# install dependencies as the user the bot runs as: skyhelper-networth writes its
+# item cache (.itemsBackup.json) inside node_modules, and the bot rewrites config.json and data/
+USER node
 RUN npm ci --omit=dev
 
 # run your app
-USER node
 CMD [ "dumb-init", "node", "index.js" ]
