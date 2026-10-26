@@ -55,8 +55,8 @@ function getSkillAverage(profileData, decimals = 0) {
     const skills = ['farming', 'mining', 'combat', 'foraging', 'fishing', 'enchanting', 'alchemy', 'taming', 'carpentry'];
     const levels = skills.map((skill) => {
         const manualCap =
-            skill === 'farming' && profileData.jacob2?.perks.farming_level_cap > -1 ? 50 + profileData.jacob2?.perks.farming_level_cap : null;
-        return getSkillLevel(profileData[`experience_skill_${skill}`], { skill, decimals, manualCap });
+            skill === 'farming' && profileData.jacobs_contest?.perks?.farming_level_cap > -1 ? 50 + profileData.jacobs_contest.perks.farming_level_cap : null;
+        return getSkillLevel(profileData.player_data?.experience?.[`SKILL_${skill.toUpperCase()}`], { skill, decimals, manualCap });
     });
     const average = levels.reduce((acc, val) => acc + val) / levels.length;
 

@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const { n } = require('../helper/functions');
 const fs = require('fs');
 
@@ -22,9 +22,9 @@ module.exports = {
 
         return interaction.editReply({
             embeds: [
-                new MessageEmbed()
+                new EmbedBuilder()
                     .setTitle('Guild Members')
-                    .setColor('BLURPLE')
+                    .setColor('Blurple')
                     .setDescription(
                         n(`Total Members: \`${totalMembers}\` / \`125\`\n
                         

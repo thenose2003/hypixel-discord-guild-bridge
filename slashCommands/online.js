@@ -1,7 +1,7 @@
 const { errorEmbed } = require('../helper/embeds');
 const { sleep, n } = require('../helper/functions');
 const { getLatestMessages } = require('../events/minecraft/message');
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'online',
@@ -49,9 +49,9 @@ module.exports = {
 
             return interaction.editReply({
                 embeds: [
-                    new MessageEmbed()
+                    new EmbedBuilder()
                         .setTitle('Online Members')
-                        .setColor('BLURPLE')
+                        .setColor('Blurple')
                         .setDescription(
                             n(`
                             Total Members: \`${totalMembers}\` / \`125\`

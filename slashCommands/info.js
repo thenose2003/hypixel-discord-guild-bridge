@@ -1,6 +1,6 @@
 const { hypixelRequest, n, addCommas } = require('../helper/functions');
 const { errorEmbed } = require('../helper/embeds');
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'info',
@@ -17,9 +17,9 @@ module.exports = {
 
         return interaction.editReply({
             embeds: [
-                new MessageEmbed()
+                new EmbedBuilder()
                     .setTitle(`${guild.name} Info`)
-                    .setColor('BLURPLE')
+                    .setColor('Blurple')
                     .setDescription(
                         n(`
                         Created: <t:${(guild.created / 1000).toFixed()}>

@@ -1,5 +1,5 @@
-const { Constants, MessageEmbed } = require('discord.js');
-const { STRING } = Constants.ApplicationCommandOptionTypes;
+const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
+const { String: STRING } = ApplicationCommandOptionType;
 const { n, addCommas, toFixed, paginator } = require('../helper/functions.js');
 const config = require('../config.json');
 const fs = require('fs');
@@ -31,9 +31,9 @@ module.exports = {
                 const embeds = [];
                 const pages = Number(toFixed((playerData.gexpHistory.length || 0) / 20)) + ((playerData.gexpHistory.length || 1) % 20 == 0 ? 0 : 1);
                 for (let i = 0; i < pages; i++) {
-                    const embed = new MessageEmbed()
+                    const embed = new EmbedBuilder()
                         .setTitle(`${lowerToNormal[playerInput.toLowerCase()]}'s Guild Exp`)
-                        .setColor('BLURPLE')
+                        .setColor('Blurple')
                         .setDescription(
                             n(`
                                 **In Guild**: \`${playerData.isInGuild ? 'Yes' : 'No'}\`
@@ -61,9 +61,9 @@ module.exports = {
 
                 paginator(interaction, embeds);
             } else {
-                const embed = new MessageEmbed()
+                const embed = new EmbedBuilder()
                     .setTitle('Guild Exp')
-                    .setColor('BLURPLE')
+                    .setColor('Blurple')
                     .setDescription(
                         config.gexpManagment.weeklyGEXPRequirement
                             ? n(`

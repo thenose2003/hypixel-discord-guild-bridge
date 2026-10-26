@@ -27,12 +27,12 @@ class RenderCommand extends BaseCommand {
             }
 
             if (itemNumber < 1 || itemNumber > 9 || !itemNumber)
-                return this.sendReply(`/gc @${messageAuthor} Invalid item number. Must be between 1 and 9.`);
+                return this.sendReply(`${messageAuthor} Invalid item number. Must be between 1 and 9.`);
 
             const searchedPlayer = await getPlayer(username, profile);
             const playerProfile = searchedPlayer.memberData;
 
-            const inventory = playerProfile?.inv_contents?.data;
+            const inventory = playerProfile?.inventory?.inv_contents?.data;
             if (!inventory) {
                 return this.sendReply(`${username} has no items in their inventory or has their inventory API disabled.`);
             }
@@ -48,7 +48,7 @@ class RenderCommand extends BaseCommand {
             const uploadResponse = await uploader.uploadBuffer(renderedItem);
             if (!uploadResponse.url) return this.sendReply(`@${messageAuthor} Failed to upload image.`);
 
-            this.sendReply(`@${messageAuthor} ${uploadResponse.url}`);
+            this.sendReply(`${messageAuthor} ${uploadResponse.url}`);
         }
     }
 }

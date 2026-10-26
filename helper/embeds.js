@@ -1,10 +1,10 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 function errorEmbed(title, message) {
-    return new MessageEmbed()
+    return new EmbedBuilder()
         .setTitle(title || 'Error')
         .setDescription(message || 'An error has occurred.')
-        .setColor('RED');
+        .setColor('Red');
 }
 
 module.exports = {

@@ -1,4 +1,5 @@
 const config = require('../config.json');
+const { sendBridgeMessage } = require('../helper/outgoingChat.js');
 const express = require('express');
 const app = express();
 app.use(express.json());
@@ -12,8 +13,8 @@ module.exports = async () => {
                 return res.status(404).send({ error: 'Endpoint not found' });
 
             let providedKey;
-            if (req.headers.hasOwnProperty('authorization')) providedKey = req.headers.authorization;
-            if (req.query.hasOwnProperty('key')) providedKey = req.query.key;
+            if (Object.hasOwn(req.headers, 'authorization')) providedKey = req.headers.authorization;
+            if (Object.hasOwn(req.query, 'key')) providedKey = req.query.key;
 
             for (const [key, commands] of Object.entries(config.api.keys)) {
                 if (key === providedKey && commands.includes(endpoint)) {
@@ -27,13 +28,14 @@ module.exports = async () => {
 
         app.post('/chat', async (req, res) => {
             try {
-                const { author, message } = req.body;
+                const { author, message } = req.body ?? {};
                 if (!author || !message) return res.status(400).send({ error: 'Missing author or message' });
 
                 if (minecraftClient?.player) {
-                    minecraftClient.chat(`/gc ${author}: ${message}`);
+                    const sent = sendBridgeMessage('/gc', author, message);
+                    if (!sent.ok) return res.status(422).send({ error: `Message blocked: ${sent.reason}` });
 
-                    return res.status(200).send({ success: true });
+                    return res.status(200).send({ success: true, lines: sent.lines.length, truncated: sent.truncated });
                 }
                 return res.status(409).send({ error: 'Not connected to Minecraft' });
             } catch (e) {
@@ -42,7 +44,7 @@ module.exports = async () => {
         });
         app.post('/invite', async (req, res) => {
             try {
-                const { player } = req.body;
+                const { player } = req.body ?? {};
                 if (!player) return res.status(400).send({ error: 'Missing player' });
 
                 if (minecraftClient?.player) {
@@ -57,7 +59,7 @@ module.exports = async () => {
         });
         app.post('/kick', async (req, res) => {
             try {
-                const { player, reason } = req.body;
+                const { player, reason } = req.body ?? {};
                 if (!player || !reason) return res.status(400).send({ error: 'Missing player or reason' });
 
                 if (minecraftClient?.player) {
@@ -72,7 +74,7 @@ module.exports = async () => {
         });
         app.post('/mute', async (req, res) => {
             try {
-                const { player, time } = req.body;
+                const { player, time } = req.body ?? {};
                 if (!player || !time) return res.status(400).send({ error: 'Missing player or time' });
 
                 if (minecraftClient?.player) {
@@ -87,7 +89,7 @@ module.exports = async () => {
         });
         app.post('/setrank', async (req, res) => {
             try {
-                const { player, rank } = req.body;
+                const { player, rank } = req.body ?? {};
                 if (!player || !rank) return res.status(400).send({ error: 'Missing player or rank' });
 
                 if (minecraftClient?.player) {
@@ -102,7 +104,7 @@ module.exports = async () => {
         });
         app.post('/unmute', async (req, res) => {
             try {
-                const { player } = req.body;
+                const { player } = req.body ?? {};
                 if (!player) return res.status(400).send({ error: 'Missing player' });
 
                 if (minecraftClient?.player) {

@@ -1,16 +1,29 @@
 const config = require('../config.json');
 
+
 class BaseCommand {
 
-    constructor(name) {
+    constructor(name, aliases = []) {
         this.name = name;
+        this.aliases = aliases;
+        // Only officers can see/run it (see helper/officers.js)
+        this.officerOnly = false;
     }
 
+    // Exact match on the name, a code alias, or an alias from config.ingameCommands.alias
     triggers(key) {
-        if (this.name === key.trim())
+        key = key.trim();
+        if (this.name === key)
+            return true;
+        if (this.aliases.includes(key))
             return true;
         if (config.ingameCommands.alias?.[this.name]?.includes(key))
             return true;
+        return false;
+    }
+
+    // Pattern match (e.g. prefixes like "pb"), only tried when no command triggers() on the key
+    matches(key) {
         return false;
     }
 
@@ -24,7 +37,12 @@ class BaseCommand {
 
     sendReply(message) {
         console.log(message)
-        //minecraftClient.chat(`/gc ${message}`);
+        minecraftClient.chat(`/gc @${message}`);
+    }
+
+    runCommand(message) {
+        console.log(message)
+        minecraftClient.chat(`/${message}`);
     }
 }
 

@@ -1,5 +1,8 @@
 const { getPlayer, addCommas } = require('../helper/functions.js');
 const BaseCommand = require('./baseCommand.js')
+const StatCommand = require('./statCommand.js');
+const { getPlayerHypixel } = require('../helper/skyblockApi.js');
+const { dot } = require('../helper/skyblockStats.js');
 
 class TrophyFishCommand extends BaseCommand {
 
@@ -45,7 +48,7 @@ class TrophyFishCommand extends BaseCommand {
         const goldCount = goldSet.size;
         const diamondCount = diamondSet.size;
 
-        const totalTrophyFish = playerProfile?.stats?.items_fished_trophy_fish || 0;
+        const totalTrophyFish = playerProfile?.trophy_fish?.total_caught || 0;
 
         let detailMessage = "";
         if (bronzeCount < 15) {
@@ -62,4 +65,39 @@ class TrophyFishCommand extends BaseCommand {
     }
 }
 
-module.exports = new TrophyFishCommand()
+// [names, trophy_fish key, display name]
+const TROPHY_FISH = [
+    [['gushers', 'gushie', 'gusher', 'gushies'], 'gusher', 'gushers'],
+    [['slugfish', 'slugie', 'sluggie'], 'slugfish', 'slugfish'],
+    [['blobfish', 'blobbie', 'blobies', 'blobie', 'blobbies'], 'blobfish', 'blobfish'],
+    [['goldenfish', 'golden', 'goldfish'], 'golden_fish', 'golden fish'],
+    [['stonefish', 'volcanic'], 'volcanic_stonefish', 'volcanic stonefish'],
+    [['manaray', 'mana', 'manafish'], 'mana_ray', 'mana rays'],
+    [['obfuscated', 'obf', 'obfuscated1', 'obf1', 'tier1', 't1', 'corrupted1'], 'obfuscated_fish_1', 'obfuscated 1'],
+    [['obfuscated2', 't2', 'tier2', 'obf2', 'corrupted2'], 'obfuscated_fish_2', 'obfuscated 2'],
+    [['obfuscated3', 't3', 'tier3', 'obf3', 'corrupted3'], 'obfuscated_fish_3', 'corrupted 3'],
+    [['lavahorse', 'horse'], 'lava_horse', 'lava horses'],
+    [['moldfin', 'mold'], 'moldfin', 'moldfin'],
+    [['karate'], 'karate_fish', 'karate fish'],
+    [['soulfish', 'soul'], 'soul_fish', 'soul fish'],
+    [['vanille'], 'vanille', 'vanilles'],
+    [['skeletonfish', 'skeleton'], 'skeleton_fish', 'skeleton fish'],
+    [['skitter', 'sulphur', 'skitters'], 'sulphur_skitter', 'sulphur skitters'],
+    [['flyfish'], 'flyfish', 'flyfish'],
+    [['flounder', 'steaming', 'steaminghot', 'flounders'], 'steaming_hot_flounder', 'steaming hot flounders'],
+];
+const trophyFishSpecies = TROPHY_FISH.map(
+    ([names, key, display]) =>
+        new StatCommand(names, async ({ name }) => {
+            const player = await getPlayerHypixel(name);
+            const fish = player.trophy_fish;
+            const bronze = fish[`${key}_bronze`] ?? 0;
+            const silver = fish[`${key}_silver`] ?? 0;
+            const gold = fish[`${key}_gold`] ?? 0;
+            const diamond = fish[`${key}_diamond`] ?? 0;
+            const total = fish[key] ?? 0;
+            return `${player.username} fished up ${dot(bronze)} bronze, ${dot(silver)} silver, ${dot(gold)} gold and ${dot(diamond)} diamond ${display} (${dot(total)} total)`;
+        })
+);
+
+module.exports = [new TrophyFishCommand(), ...trophyFishSpecies]

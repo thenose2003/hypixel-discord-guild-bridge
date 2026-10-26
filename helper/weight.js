@@ -45,15 +45,19 @@ const skills = ['enchanting', 'taming', 'alchemy', 'mining', 'farming', 'foragin
  * @param {{}} profileData profile data from API
  * @returns senither weight data
  */
+// v2 profile fields
+const skillXp = (profileData, skill) => profileData.player_data?.experience?.[`SKILL_${skill.toUpperCase()}`];
+const slayerXp = (profileData, slayer) => profileData.slayer?.slayer_bosses?.[slayer]?.xp;
+
 function getSenitherWeight(profileData) {
     const weight = {
         skills: skills.reduce((acc, val) => {
-            const xp = profileData[`experience_skill_${val}`] || 0;
+            const xp = skillXp(profileData, val) || 0;
             acc[val] = calculateSkillWeight(val, getSkillLevel(xp, { skill: val, decimals: 5 }), xp);
             return acc;
         }, {}),
         slayers: slayers.reduce((acc, val) => {
-            acc[val] = calculateSlayerWeight(val, profileData.slayer_bosses?.[val]?.xp || 0);
+            acc[val] = calculateSlayerWeight(val, slayerXp(profileData, val) || 0);
             return acc;
         }, {}),
         dungeons: {
@@ -64,7 +68,7 @@ function getSenitherWeight(profileData) {
             ),
             classes: classes.reduce((acc, val) => {
                 const xp = profileData.dungeons?.player_classes?.[val]?.experience || 0;
-                acc[val] = calculateDungeonWeight(val, getSkillLevel(xp, { skill: 'dungeonClass', decimals: 5 }), xp);
+                acc[val] = calculateDungeonWeight(val, getSkillLevel(xp, { skill: 'dungeonClass', decimals: 5, manualCap: 50 }), xp);
                 return acc;
             }, {}),
         },
@@ -142,8 +146,8 @@ function getLilyWeight(profileData) {
     const catacombsCompletions = profileData.dungeons?.dungeon_types?.catacombs?.tier_completions || {};
     const mmCompletions = profileData.dungeons?.dungeon_types?.master_catacombs?.tier_completions || {};
     const weight = LilyWeight.getWeightRaw(
-        skills.map((skill) => getSkillLevel(profileData[`experience_skill_${skill}`], { skill, manualCap: 60 })),
-        skills.map((skill) => profileData[`experience_skill_${skill}`] || 0),
+        skills.map((skill) => getSkillLevel(skillXp(profileData, skill), { skill, manualCap: 60 })),
+        skills.map((skill) => skillXp(profileData, skill) || 0),
         Array.apply(null, Array(8))
             .map((_, i) => catacombsCompletions[i] || 0)
             .reduce((acc, val, i) => {
@@ -157,7 +161,7 @@ function getLilyWeight(profileData) {
                 return acc;
             }, {}),
         profileData.dungeons?.dungeon_types?.catacombs?.experience || 0,
-        lilySlayers.map((slayer) => profileData.slayer_bosses?.[slayer]?.xp || 0)
+        lilySlayers.map((slayer) => slayerXp(profileData, slayer) || 0)
     );
 
     return { ...weight };

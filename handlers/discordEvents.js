@@ -6,6 +6,7 @@ module.exports = (discordClient) => {
         .forEach((file) => {
             const event = require(`../events/discord/${file}`);
             const name = file.split('.')[0];
-            discordClient.on(name, event.execute.bind(null, discordClient));
+            // discord.js v14 renamed 'ready' to 'clientReady'; the file keeps its old name because other modules require it
+            discordClient.on(name === 'ready' ? 'clientReady' : name, event.execute.bind(null, discordClient));
         });
 };

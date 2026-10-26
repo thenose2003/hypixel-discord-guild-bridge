@@ -1,12 +1,12 @@
 const { getRequirements, getRequirementEmbed, LONG_STATS } = require('../helper/requirements.js');
 const { nameToUUID, createCollector, n, addCommas } = require('../helper/functions.js');
-const { Constants, MessageButton, MessageActionRow, MessageEmbed } = require('discord.js');
-const { STRING } = Constants.ApplicationCommandOptionTypes;
+const { ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { String: STRING } = ApplicationCommandOptionType;
 const { errorEmbed } = require('../helper/embeds.js');
 const config = require('../config.json');
 
-const REQUIREMENT_BUTTON = new MessageActionRow().addComponents(
-    new MessageButton().setCustomId('requirements').setLabel('Guild Requirements').setStyle('SECONDARY')
+const REQUIREMENT_BUTTON = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('requirements').setLabel('Guild Requirements').setStyle(ButtonStyle.Secondary)
 );
 
 module.exports = {
@@ -37,7 +37,7 @@ module.exports = {
                 if (i.customId === 'requirements') {
                     await interaction.followUp({
                         embeds: [
-                            new MessageEmbed().setColor('BLURPLE').setDescription(
+                            new EmbedBuilder().setColor('Blurple').setDescription(
                                 n(`
                             **Guild Requirements**:
                             ${config.guildRequirement.minRequired ? `**Minimum Required**: \`${config.guildRequirement.minRequired}\`\n` : ''}
@@ -57,7 +57,7 @@ module.exports = {
                         `)
                             ),
                         ],
-                        ephemeral: true,
+                        flags: MessageFlags.Ephemeral,
                     });
                 }
             };

@@ -4,7 +4,7 @@ module.exports = {
     execute: async (discordClient, interaction) => {
         if (interaction.user.bot) return;
         if (!interaction.guildId) return; // DMs
-        if (interaction.type !== 'APPLICATION_COMMAND') return;
+        if (!interaction.isChatInputCommand()) return;
 
         const cmd = interaction.commandName;
         const command = discordClient.commands.get(cmd);

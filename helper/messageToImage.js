@@ -1,7 +1,7 @@
-const Canvas = require('canvas');
+const { createCanvas, GlobalFonts } = require('@napi-rs/canvas');
 const config = require('../config.json');
-Canvas.registerFont('./fonts/MinecraftRegular-Bmg3.ttf', { family: 'Minecraft' });
-Canvas.registerFont('./fonts/unifont.ttf', { family: 'MinecraftUnicode' });
+GlobalFonts.registerFromPath('./fonts/MinecraftRegular-Bmg3.ttf', 'Minecraft');
+GlobalFonts.registerFromPath('./fonts/unifont.ttf', 'MinecraftUnicode');
 
 const RGBA_COLOR = {
     0: 'rgba(0,0,0,1)',
@@ -25,7 +25,7 @@ const RGBA_COLOR = {
 const multiplier = config?.options?.imageSizeMultiplier || 1;
 
 function getHeight(message) {
-    const canvas = Canvas.createCanvas(1, 1);
+    const canvas = createCanvas(1, 1);
     const ctx = canvas.getContext('2d');
     const splitMessageSpace = message.split(' ');
     for (const [i, msg] of Object.entries(splitMessageSpace)) {
@@ -53,7 +53,7 @@ function getHeight(message) {
 
 function generateMessageImage(message) {
     const canvasHeight = getHeight(message);
-    const canvas = Canvas.createCanvas(1000, canvasHeight);
+    const canvas = createCanvas(1000, canvasHeight);
     const ctx = canvas.getContext('2d');
     const splitMessageSpace = message.split(' ');
     for (const [i, msg] of Object.entries(splitMessageSpace)) {
@@ -81,7 +81,7 @@ function generateMessageImage(message) {
         ctx.fillText(currentMessage, width, height);
         width += ctx.measureText(currentMessage).width;
     }
-    return canvas.toBuffer();
+    return canvas.toBuffer('image/png');
 }
 
 module.exports = generateMessageImage;

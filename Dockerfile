@@ -1,19 +1,23 @@
-FROM node:16-alpine
+# define base image
+# node 22 is the newest LTS with 32-bit ARM (Raspberry Pi OS armhf) images
+FROM node:22-bookworm-slim
 
-RUN apk add --update --no-cache \
-    make \
-    g++ \
-    jpeg-dev \
-    cairo-dev \
-    giflib-dev \
-    pango-dev \
-    libtool \
-    autoconf \
-    automake
+# download dumb-init (images use @napi-rs/canvas, which ships prebuilt binaries, so no build tools are needed)
+RUN apt-get update && apt-get install -y --no-install-recommends dumb-init \
+    && rm -rf /var/lib/apt/lists/*
 
+# define environment
+ENV NODE_ENV production
+
+# set work directory
 WORKDIR /usr/src/app
-COPY package*.json ./
-RUN yarn install
-COPY . .
 
-CMD [ "yarn", "start" ]
+# copy all sources to container
+COPY --chown=node:node . /usr/src/app
+
+# install dependencies
+RUN npm ci --omit=dev
+
+# run your app
+USER node
+CMD [ "dumb-init", "node", "index.js" ]

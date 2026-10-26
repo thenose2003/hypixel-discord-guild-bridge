@@ -58,5 +58,8 @@ module.exports = [
     new FarmingContestCommand("carrotcontest", "Carrot"),
     new FarmingContestCommand("wheatcontest", "Wheat"),
     new FarmingContestCommand("netherwartcontest", "Nether Wart"),
+    new FarmingContestCommand("sunflowercontest", "Sunflower"),
+    new FarmingContestCommand("wildrosecontest", "Wild Rose"),
+    new FarmingContestCommand("moonflowercontest", "Moonflower"),
     new JacobContestCommand()
 ]

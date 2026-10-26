@@ -2,8 +2,7 @@ const fs = require('fs');
 const config = require('../config.json');
 const BaseCommand = require('../ingameCommands/baseCommand.js')
 
-module.exports = () => {
-    global.minecraftClient = {}
+module.exports = (discordClient) => {
     global.minecraftClient.commands = new Set();
 
     const commandFiles = fs.readdirSync('./ingameCommands/');

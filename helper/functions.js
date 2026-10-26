@@ -1,9 +1,7 @@
 const axios = require('axios');
-const { MessageButton, MessageActionRow } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 const config = require('../config.json');
 const nbt = require('prismarine-nbt');
-const util = require('util');
-const parseNbt = util.promisify(nbt.parse);
 
 function includesIgnored(message) {
     return config.channels.logOptions.ingameChatLogFilter.some((ignored) => message.includes(ignored));
@@ -34,7 +32,7 @@ async function getPlayer(player, profile) {
     const mojangResponse = await nameToUUID(player);
     if (!mojangResponse) throw new Error('Player not found');
 
-    const hypixelResponse = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${mojangResponse}`, true);
+    const hypixelResponse = await hypixelRequest(`https://api.hypixel.net/v2/skyblock/profiles?uuid=${mojangResponse}`, true);
     if (!hypixelResponse) throw new Error("Couldn't get a response from the API");
     if (hypixelResponse.profiles === null) throw new Error(`Couldn\'t find any Skyblock profile that belongs to ${player}`);
 
@@ -79,8 +77,8 @@ async function getPlayerStatus(player) {
 }
 
 async function decodeData(buffer) {
-    const parsedNbt = await parseNbt(buffer);
-    return nbt.simplify(parsedNbt);
+    const { parsed } = await nbt.parse(buffer);
+    return nbt.simplify(parsed);
 }
 
 async function formatMentions(client, message) {
@@ -262,8 +260,8 @@ function hypixelLevel(exp) {
 
 async function paginator(interaction, embeds) {
     const BUTTONS = [
-        new MessageButton().setEmoji('⬅️').setStyle('PRIMARY').setCustomId('back').setDisabled(true),
-        new MessageButton().setEmoji('➡️').setStyle('PRIMARY').setCustomId('forward'),
+        new ButtonBuilder().setEmoji('⬅️').setStyle(ButtonStyle.Primary).setCustomId('back').setDisabled(true),
+        new ButtonBuilder().setEmoji('➡️').setStyle(ButtonStyle.Primary).setCustomId('forward'),
     ];
 
     if (embeds.length == 1) BUTTONS[1].setDisabled(true);
@@ -271,7 +269,7 @@ async function paginator(interaction, embeds) {
     let selectedPage = 1;
     const reply = await interaction.editReply({
         embeds: [embeds[selectedPage - 1]],
-        components: [new MessageActionRow().addComponents(BUTTONS[0], BUTTONS[1])],
+        components: [new ActionRowBuilder().addComponents(BUTTONS[0], BUTTONS[1])],
     });
 
     const collector = reply.createMessageComponentCollector({ filter: (i) => i.user.id === interaction.user.id, time: 1000 * 60 });
@@ -300,7 +298,7 @@ async function paginator(interaction, embeds) {
         }
         await interaction.editReply({
             embeds: [embeds[selectedPage - 1]],
-            components: [new MessageActionRow().addComponents(BUTTONS[0], BUTTONS[1])],
+            components: [new ActionRowBuilder().addComponents(BUTTONS[0], BUTTONS[1])],
         });
         await i.deferUpdate();
     });

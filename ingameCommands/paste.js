@@ -13,20 +13,17 @@ class PasteCommand extends BaseCommand {
         if (paste.length < 1)
             return this.sendReply(`@${messageAuthor} You must provide a paste to paste.`);
 
-        const bin = await sourcebin
-            .create(
-                [
-                    {
-                        content: paste,
-                        language: 'text',
-                    },
-                ],
+        const bin = await sourcebin.create({
+            title: `${messageAuthor}'s Paste`,
+            files: [
                 {
-                    title: `${messageAuthor}'s Paste`,
-                }
-            );
+                    content: paste,
+                    language: 'text',
+                },
+            ],
+        });
 
-        return this.sendReply(`@${messageAuthor} ${bin.url}`);
+        return this.sendReply(`${messageAuthor} ${bin.url}`);
     }
 }
 

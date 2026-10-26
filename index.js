@@ -1,10 +1,18 @@
-const { Client, Intents } = require('discord.js');
+const { Client, GatewayIntentBits } = require('discord.js');
 const discordClient = new Client({
-    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_MEMBERS],
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.MessageContent,
+    ],
 });
+
 
 const config = require('./config.json');
 const mineflayer = require('mineflayer');
+const { installChatGuard } = require('./helper/outgoingChat.js');
 
 const minecraftLoginOptions = {
     host: 'mc.hypixel.net',
@@ -18,7 +26,14 @@ const minecraftLoginOptions = {
 
 if (!config.minecraft.doNotUsePassword) minecraftLoginOptions.password = config.minecraft.password;
 
-global.minecraftClient = mineflayer.createBot(minecraftLoginOptions);
+// Every bot gets the safety filter on its chat (helper/outgoingChat.js)
+function createMinecraftBot() {
+    const bot = mineflayer.createBot(minecraftLoginOptions);
+    installChatGuard(bot);
+    return bot;
+}
+
+global.minecraftClient = createMinecraftBot();
 
 startMinecraftBot(minecraftClient, discordClient);
 async function startMinecraftBot(minecraftClient, discordClient) {
@@ -28,7 +43,7 @@ async function startMinecraftBot(minecraftClient, discordClient) {
                 .get(config.channels.log)
                 ?.send(`${config.minecraft.ingameName + ' has' || 'I have'} been disconnected from Hypixel. Trying to reconnect...`);
         }
-        global.minecraftClient = mineflayer.createBot(minecraftLoginOptions);
+        global.minecraftClient = createMinecraftBot();
         startMinecraftBot(minecraftClient, discordClient);
     });
 
@@ -53,7 +68,7 @@ if (config.options.unknownDisconnectRelog) {
             } catch (err) {
                 console.error(err);
             }
-            global.minecraftClient = mineflayer.createBot(minecraftLoginOptions);
+            global.minecraftClient = createMinecraftBot();
             startMinecraftBot(minecraftClient, discordClient);
         }
     }, 1000 * 60 * 5); // 5 minutes

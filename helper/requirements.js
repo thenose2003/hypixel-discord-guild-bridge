@@ -1,10 +1,10 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const config = require('../config.json');
 const { hypixelRequest, hypixelLevel, addCommas, toFixed } = require('./functions.js');
 const { getBedwarsLevel } = require('./getBedwarsLevel');
 const { getSkillAverage, getSkillLevel } = require('./skills');
 const { getSenitherWeight, getLilyWeight } = require('./weight');
-const { getNetworth } = require('skyhelper-networth');
+const { ProfileNetworthCalculator } = require('skyhelper-networth');
 
 const LONG_STATS = {
     skyblockLevel: 'SkyBlock Level',
@@ -40,25 +40,25 @@ async function getRequirements(uuid) {
         bwFKDR: null,
     };
 
-    const sbData = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${uuid}`, true);
+    const sbData = await hypixelRequest(`https://api.hypixel.net/v2/skyblock/profiles?uuid=${uuid}`, true);
     if ((sbData?.profiles?.length || 0) > 0) {
         for (const profile of sbData.profiles) {
             const memberData = profile?.members?.[uuid] || {};
             const skyblockLevel = Number(toFixed((memberData.leveling?.experience || 0) / 100, 2));
             let networth = 0;
             try {
-                networth = (await getNetworth(memberData, profile?.banking?.balance || 0, { onlyNetworth: true })).networth;
+                networth = (await new ProfileNetworthCalculator(memberData, null, profile?.banking?.balance || 0).getNetworth({ onlyNetworth: true })).networth;
             } catch (e) {}
             let senitherWeight = getSenitherWeight(memberData);
             senitherWeight = senitherWeight.total + senitherWeight.totalOverflow;
             const lilyWeight = getLilyWeight(memberData).total;
             const skillAverage = getSkillAverage(memberData);
             const catacombs = getSkillLevel(memberData.dungeons?.dungeon_types?.catacombs?.experience || 0, { skill: 'dungeoneering' });
-            const revenant = getSkillLevel(memberData?.slayer_bosses?.zombie?.xp || 0, { skill: 'slayer' });
-            const tarantula = getSkillLevel(memberData?.slayer_bosses?.spider?.xp || 0, { skill: 'slayer' });
-            const wolf = getSkillLevel(memberData?.slayer_bosses?.wolf?.xp || 0, { skill: 'slayer' });
-            const enderman = getSkillLevel(memberData?.slayer_bosses?.enderman?.xp || 0, { skill: 'slayer' });
-            const blaze = getSkillLevel(memberData?.slayer_bosses?.blaze?.xp || 0, { skill: 'slayer' });
+            const revenant = getSkillLevel(memberData?.slayer?.slayer_bosses?.zombie?.xp || 0, { skill: 'slayer' });
+            const tarantula = getSkillLevel(memberData?.slayer?.slayer_bosses?.spider?.xp || 0, { skill: 'slayer' });
+            const wolf = getSkillLevel(memberData?.slayer?.slayer_bosses?.wolf?.xp || 0, { skill: 'slayer' });
+            const enderman = getSkillLevel(memberData?.slayer?.slayer_bosses?.enderman?.xp || 0, { skill: 'slayer' });
+            const blaze = getSkillLevel(memberData?.slayer?.slayer_bosses?.blaze?.xp || 0, { skill: 'slayer' });
 
             if ((result.skyblockLevel || 0) < skyblockLevel) result.skyblockLevel = skyblockLevel;
             if ((result.networth || 0) < networth) result.networth = networth;
@@ -117,7 +117,7 @@ function getRequirementEmbed(requirementData, username, officerChatMessage, uuid
     let requirementsMet = 0;
     let requirementsMetSkyblock = 0;
     let requirementsMetBedwars = 0;
-    const requirementsEmbed = new MessageEmbed().setTitle(`${username}'s Requirements`).setColor('BLURPLE');
+    const requirementsEmbed = new EmbedBuilder().setTitle(`${username}'s Requirements`).setColor('Blurple');
 
     let requirementsDescription = [];
     for (const [stat, requirement] of Object.entries(config.guildRequirement.requirements)) {
@@ -171,11 +171,11 @@ function getRequirementEmbed(requirementData, username, officerChatMessage, uuid
                 if (isBlacklisted) requirementsDescription.unshift(`**${username}** meets the requirements but is blacklisted!`);
                 else requirementsDescription.unshift(`**${username}** meets the requirements and is allowed to join the guild!`);
             }
-            requirementsEmbed.setColor('GREEN');
+            requirementsEmbed.setColor('Green');
         } else {
             if (isBlacklisted) requirementsDescription.unshift(`**${username}** does not meet the requirements and is blacklisted!`);
             else requirementsDescription.unshift(`**${username}** does not meet the requirements and is not allowed to join the guild.`);
-            requirementsEmbed.setColor('RED');
+            requirementsEmbed.setColor('Red');
         }
     }
     requirementsEmbed.setDescription(requirementsDescription.join('\n'));

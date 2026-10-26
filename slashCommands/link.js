@@ -1,6 +1,6 @@
 const { getGuildMemberData, n } = require('../helper/functions');
-const { Constants, MessageEmbed } = require('discord.js');
-const { STRING } = Constants.ApplicationCommandOptionTypes;
+const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
+const { String: STRING } = ApplicationCommandOptionType;
 const { errorEmbed } = require('../helper/embeds');
 const fs = require('fs');
 
@@ -24,7 +24,7 @@ module.exports = {
 
         const discordLink = playerData?.player?.socialMedia?.links?.DISCORD;
 
-        if (!discordLink || discordLink !== interaction.user.tag) {
+        if (!discordLink || discordLink !== interaction.user.username) {
             return interaction.editReply({
                 embeds: [
                     errorEmbed(
@@ -52,9 +52,9 @@ module.exports = {
 
         return interaction.editReply({
             embeds: [
-                new MessageEmbed()
+                new EmbedBuilder()
                     .setTitle('Success')
-                    .setColor('BLURPLE')
+                    .setColor('Blurple')
                     .setDescription(
                         n(`
                     You have successfully ${

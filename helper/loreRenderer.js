@@ -1,8 +1,8 @@
-const Canvas = require('canvas');
-Canvas.registerFont('./fonts/MinecraftRegular-Bmg3.ttf', { family: 'Minecraft' });
-Canvas.registerFont('./fonts/minecraft-bold.otf', { family: 'MinecraftBold' });
-Canvas.registerFont('./fonts/2_Minecraft-Italic.otf', { family: 'MinecraftItalic' });
-Canvas.registerFont('./fonts/unifont.ttf', { family: 'MinecraftUnicode' });
+const { createCanvas, GlobalFonts } = require('@napi-rs/canvas');
+GlobalFonts.registerFromPath('./fonts/MinecraftRegular-Bmg3.ttf', 'Minecraft');
+GlobalFonts.registerFromPath('./fonts/minecraft-bold.otf', 'MinecraftBold');
+GlobalFonts.registerFromPath('./fonts/2_Minecraft-Italic.otf', 'MinecraftItalic');
+GlobalFonts.registerFromPath('./fonts/unifont.ttf', 'MinecraftUnicode');
 
 const RGBA_COLOR = {
     0: 'rgba(0,0,0,1)',
@@ -24,7 +24,7 @@ const RGBA_COLOR = {
 };
 
 async function getCanvasWidthAndHeight(lore) {
-    const canvas = Canvas.createCanvas(1, 1);
+    const canvas = createCanvas(1, 1);
     const ctx = canvas.getContext('2d');
     ctx.font = '24px Minecraft';
 
@@ -42,7 +42,7 @@ async function getCanvasWidthAndHeight(lore) {
 async function renderLore(itemName, lore) {
     if (itemName) lore.unshift(itemName);
     const measurements = await getCanvasWidthAndHeight(lore);
-    const canvas = Canvas.createCanvas(measurements.width, measurements.height);
+    const canvas = createCanvas(measurements.width, measurements.height);
     const ctx = canvas.getContext('2d');
     // BACKGROUND
     ctx.fillStyle = '#100110';
@@ -73,7 +73,7 @@ async function renderLore(itemName, lore) {
         }
     }
 
-    return canvas.toBuffer();
+    return canvas.toBuffer('image/png');
 }
 
 module.exports = {

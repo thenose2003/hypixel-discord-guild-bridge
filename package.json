@@ -9,16 +9,20 @@
     "author": "Altpapier",
     "license": "MIT",
     "dependencies": {
-        "axios": "^0.26.1",
-        "canvas": "^2.9.1",
-        "cors": "^2.8.5",
-        "cron": "^1.8.2",
-        "discord.js": "^13.6.0",
-        "express": "^4.17.3",
-        "imgur-anonymous-uploader": "^1.1.4",
-        "lilyweight": "^2.6.2",
-        "mineflayer": "^4.2.0",
-        "skyhelper-networth": "^1.13.0",
-        "sourcebin": "^4.3.5"
+        "@napi-rs/canvas": "^1.0.13",
+        "axios": "^1.20.0",
+        "cors": "^2.8.6",
+        "cron": "^4.4.0",
+        "discord.js": "^14.27.0",
+        "express": "^5.3.0",
+        "imgur-anonymous-uploader": "^1.1.9",
+        "lilyweight": "^2.7.2",
+        "mineflayer": "^4.39.0",
+        "prismarine-nbt": "^2.8.0",
+        "skyhelper-networth": "^2.11.1",
+        "sourcebin": "^6.0.1"
+    },
+    "engines": {
+        "node": ">=22.13"
     }
 }
