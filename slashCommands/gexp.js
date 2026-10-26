@@ -61,48 +61,37 @@ module.exports = {
 
                 paginator(interaction, embeds);
             } else {
-                const embed = new EmbedBuilder()
-                    .setTitle('Guild Exp')
-                    .setColor('Blurple')
-                    .setDescription(
-                        config.gexpManagment.weeklyGEXPRequirement
-                            ? n(`
-                            **Weekly GEXP Requirement**: \`${addCommas(config.gexpManagment.weeklyGEXPRequirement)}\`
+                const requirement = config.gexpManagment.weeklyGEXPRequirement;
+                const members = Object.keys(gexpData).filter((player) => gexpData[player].isInGuild);
+                const line = (player) => `**${player}**: \`${addCommas(gexpData[player].gexpWeek)}\``;
+                const byGexp = (a, b) => gexpData[a].gexpWeek - gexpData[b].gexpWeek;
 
-                            **Members under the requirement**:
-                            ${Object.keys(gexpData)
-                                .filter((player) => gexpData[player].isInGuild)
-                                .filter((player) => gexpData[player].gexpWeek < config.gexpManagment.weeklyGEXPRequirement)
-                                .sort((a, b) => gexpData[a].gexpWeek - gexpData[b].gexpWeek)
-                                .map((player) => {
-                                    return `**${player}**: \`${addCommas(gexpData[player].gexpWeek)}\``;
-                                })
-                                .join('\n')}
+                const lines = requirement
+                    ? [
+                          `**Weekly GEXP Requirement**: \`${addCommas(requirement)}\``,
+                          '',
+                          '**Members under the requirement**:',
+                          ...members.filter((player) => gexpData[player].gexpWeek < requirement).sort(byGexp).map(line),
+                          '',
+                          '**Members above the requirement**:',
+                          ...members.filter((player) => gexpData[player].gexpWeek >= requirement).sort(byGexp).map(line),
+                      ]
+                    : ['**Members**:', ...members.sort((a, b) => byGexp(b, a)).map(line)];
 
-                            **Members above the requirement**:
-                            ${Object.keys(gexpData)
-                                .filter((player) => gexpData[player].isInGuild)
-                                .filter((player) => gexpData[player].gexpWeek >= config.gexpManagment.weeklyGEXPRequirement)
-                                .sort((a, b) => gexpData[a].gexpWeek - gexpData[b].gexpWeek)
-                                .map((player) => {
-                                    return `**${player}**: \`${addCommas(gexpData[player].gexpWeek)}\``;
-                                })
-                                .join('\n')}
-                         `)
-                            : n(`
-                                **Members**:
-                                ${Object.keys(gexpData)
-                                    .filter((player) => gexpData[player].isInGuild)
-                                    .sort((a, b) => gexpData[b].gexpWeek - gexpData[a].gexpWeek)
-                                    .map((player) => {
-                                        return `**${player}**: \`${addCommas(gexpData[player].gexpWeek)}\``;
-                                    })
-                                    .join('\n')}
-                                    
-                         `)
-                    );
+                // Discord rejects embed descriptions over 4096 characters, so long lists become pages
+                const pages = [''];
+                for (const text of lines) {
+                    if (pages[pages.length - 1].length + text.length + 1 > 4000) pages.push('');
+                    pages[pages.length - 1] += `${text}\n`;
+                }
+                const embeds = pages.map((page, i) => {
+                    const embed = new EmbedBuilder().setTitle('Guild Exp').setColor('Blurple').setDescription(page.trim() || 'None');
+                    if (pages.length > 1) embed.setFooter({ text: `Page ${i + 1} / ${pages.length}` });
+                    return embed;
+                });
+                if (embeds.length > 1) return paginator(interaction, embeds);
                 return interaction.editReply({
-                    embeds: [embed],
+                    embeds,
                 });
             }
         } else {

@@ -1,6 +1,5 @@
 const { errorEmbed } = require('../helper/embeds');
-const { sleep, n } = require('../helper/functions');
-const { getLatestMessages } = require('../events/minecraft/message');
+const { n } = require('../helper/functions');
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
@@ -9,20 +8,12 @@ module.exports = {
     options: [],
     async execute(discordClient, interaction) {
         if (minecraftClient?.player) {
-            await minecraftClient.chat('/g online');
-
-            let timeoutIndex = 0;
-            while (!includesOnlineCommand(getLatestMessages())) {
-                await sleep(500);
-                timeoutIndex++;
-                if (timeoutIndex >= 10) {
-                    return interaction.editReply({
-                        embeds: [errorEmbed(null, '`/g online` timed out')],
-                    });
-                }
+            const onlineCommand = await readGuildOnline(minecraftClient);
+            if (!onlineCommand) {
+                return interaction.editReply({
+                    embeds: [errorEmbed(null, '`/g online` timed out')],
+                });
             }
-
-            const onlineCommand = includesOnlineCommand(getLatestMessages());
 
             const totalMembers = onlineCommand.at(-3).split(':')[1].trim();
             const onlineMembers = onlineCommand.at(-2).split(':')[1].trim();
@@ -75,6 +66,27 @@ module.exports = {
         }
     },
 };
+
+// Sends /g online and collects the reply straight from the bot's chat (one line per message) until
+// "Offline Members:" arrives, or gives up after `timeoutMs`
+function readGuildOnline(bot, timeoutMs = 5000) {
+    return new Promise((resolve) => {
+        const lines = [];
+        const onMessage = (message) => {
+            lines.push(...message.toString().split('\n').map((line) => line.trim()).filter(Boolean));
+            const block = includesOnlineCommand(lines);
+            if (block) finish(block);
+        };
+        const finish = (result) => {
+            clearTimeout(timer);
+            bot.removeListener('message', onMessage);
+            resolve(result);
+        };
+        const timer = setTimeout(() => finish(false), timeoutMs);
+        bot.on('message', onMessage);
+        bot.chat('/g online');
+    });
+}
 
 function includesOnlineCommand(array) {
     let includes = 0;
