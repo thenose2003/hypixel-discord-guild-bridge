@@ -18,13 +18,13 @@ The rules are:
 1. A leading `!s` / `!stats` is dropped, so `!s cata X` is the same as `!cata X`.
 2. The key is the first word without the trigger, lowercased, with all `-` removed (`!PB-M7` → `pbm7`).
 3. `findCommand(key)` checks exact matches first: `name`, then code `aliases`, then `config.ingameCommands.alias[name]`. If nothing matches, it falls back to pattern matches (`matches(key)`), and the lowest `matchPriority` wins. The pattern commands are `lb`/`leaderboard*` (1), `pb*` (2), `runs*` (3), `team*` (4), and `*weight` → lily weight (5).
-4. Every command works from both sides. Commands with `officerOnly` (`!rs`) are only visible to officers (`helper/officers.js`). Nothing runs from Discord if `ingameCommands.discordEnabled` is `false`.
+4. Every command works from both sides, except `gameOnly` ones (`!mute`), which Discord ignores. Commands with `officerOnly` (`!rs`) are only visible to officers (`helper/officers.js`). Nothing runs from Discord if `ingameCommands.discordEnabled` is `false`.
 5. **At most one command runs per message.** It's called as `execute(text, author, { fromDiscord, isOfficer, discordClient, discordMember })`. If a non-stat command throws, `@author <error>` is sent to guild chat.
 6. **Officers:** if no bot command matches, the text runs as a Minecraft command (`!g kick X` → `/g kick X`). `!/<command>` always runs as a Minecraft command, which is how to reach names that a bot command shadows: `!/w` (whisper; `w` is a weight alias), `!/guild`, `!/l` and `!/ah`.
 
 ### `BaseCommand` (`ingameCommands/baseCommand.js`)
 
-- `constructor(name, aliases = [])`. Set `this.officerOnly = true` for officer-only commands.
+- `constructor(name, aliases = [])`. Set `this.officerOnly = true` for officer-only commands, and `this.gameOnly = true` for commands Discord can't use.
 - `triggers(key)` handles exact matches. `matches(key)` handles pattern matches and returns `false` by default.
 - `getArgs(message, author)` returns `{ username: word[1] || author, profile: word[2] }`.
 - `sendReply(text)` sends `/gc @<text>`. `runCommand(text)` sends `/<text>`.
@@ -89,7 +89,7 @@ These are separate from the older `helper/functions.js`, `helper/skills.js` and 
 | `farmingContests.js` | `jacobcontest` and `<crop>contest` for all 13 contest crops, including `sunflowercontest`, `wildrosecontest` and `moonflowercontest` |
 | `cakes.js`, `jademining.js`, `paste.js`, `render.js`, `rtca.js` | BaseCommands |
 | `restart.js` | `!rs` (officer only): `process.exit(0)`, so Docker or a supervisor has to start the bot again |
-| `mute.js` | `!mute <name>`, from Minecraft **and** Discord. A roll of 0-1 mutes `<name>`, anything else mutes the author (`everyone` always backfires). The loser gets `/g mute <IGN> 15m` if they have an IGN, and a 15-minute Discord timeout if they're a Discord member. IGN ↔ Discord is matched through `/link` (`data/guildLinkUsernames.json`). A typed name is matched to a linked IGN first, then to a Discord username, display name or nickname. |
+| `mute.js` | `!mute <name>`, **game chat only** (`gameOnly`; ignored on Discord, even from officers). A roll of 0-1 runs `/g mute <name> 15m`, anything else mutes the author (`everyone` always backfires). |
 | `bitches.js`, `eightball.js` (`8ball`), `ironman.js`, `rizz.js`, `random.js`, `test.js` | Joke BaseCommands |
 
 `config.json` → `ingameCommands.alias` adds extra aliases by command **name**, for example `weight: [w]`, `level: [lv, l]` or `enderman: [voidgloom]`.

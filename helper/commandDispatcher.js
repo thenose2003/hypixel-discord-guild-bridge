@@ -1,9 +1,9 @@
 const config = require('../config.json');
 
 // Exact names/aliases win over pattern matches; lower matchPriority wins among patterns.
-// Officer-only commands are invisible to everyone else.
-function findCommand(key, { isOfficer = false } = {}) {
-    const commands = [...(minecraftClient?.commands || [])].filter((c) => isOfficer || !c.officerOnly);
+// Officer-only commands are invisible to everyone else, game-only ones to Discord.
+function findCommand(key, { isOfficer = false, fromDiscord = false } = {}) {
+    const commands = [...(minecraftClient?.commands || [])].filter((c) => (isOfficer || !c.officerOnly) && (!fromDiscord || !c.gameOnly));
     return (
         commands.find((c) => c.triggers(key)) ||
         commands.filter((c) => c.matches(key)).sort((a, b) => (a.matchPriority ?? 100) - (b.matchPriority ?? 100))[0]
@@ -45,7 +45,9 @@ function dispatchCommand(text, author, { fromDiscord = false, isOfficer = false,
     const key = words[0].substring(trigger.length).toLowerCase().replace(/-/g, '');
     if (!key) return false;
 
-    const command = findCommand(key, { isOfficer });
+    const command = findCommand(key, { isOfficer, fromDiscord });
+    // A game-only command typed on Discord does nothing (it must not fall through to officer passthrough)
+    if (!command && fromDiscord && findCommand(key, { isOfficer })?.gameOnly) return false;
     if (!command) return isOfficer && runAsMinecraftCommand(text);
 
     command.execute(words.join(' '), author, { fromDiscord, isOfficer, discordClient, discordMember }).catch((err) => {

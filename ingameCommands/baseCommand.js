@@ -8,6 +8,8 @@ class BaseCommand {
         this.aliases = aliases;
         // Only officers can see/run it (see helper/officers.js)
         this.officerOnly = false;
+        // Only usable from game chat, never from the Discord bridge
+        this.gameOnly = false;
     }
 
     // Exact match on the name, a code alias, or an alias from config.ingameCommands.alias

@@ -11,10 +11,9 @@ Observed while reading the code (2026-10-25). Verify them before you rely on the
 - **The `ingameChatLog` channel is a console.** Anything posted there is sent raw to Minecraft.
 - **The limbo keeper sends `§`.** That is intentional: it is an illegal character, so Hypixel kicks the bot to limbo.
 - **`react()` export hack.** `events/discord/messageCreate.js` reassigns `module.exports = { react }` *inside* `execute`, so `react` exists only after the first Discord message. `ready.js` does the same for `sendDiscordMessage`. Consumers `require` these lazily and wrap the call in try/catch.
-- **Every `!` command also works from the Discord bridge.** That includes `!mute` (Discord timeouts) and `!paste`, which publishes to sourcebin. From Discord, the author is the linked IGN, or the Discord username when not linked.
+- **Every `!` command also works from the Discord bridge, except `gameOnly` ones (`!mute`).** That includes `!paste`, which publishes to sourcebin. From Discord, the author is the linked IGN, or the Discord username when not linked.
 - **The safety filter blocks profanity by default.** Guild members swearing on Discord get 🚫 and their message isn't relayed. Turn that category off with `safetyFilter.categories.profanity: false` if your guild doesn't want it. Links in bot replies are stripped unless their domain is allowed (sourcebin and imgur by default). If a command reply silently doesn't appear, look for a `[safety]` warning in the console.
 - **Replies can be blocked by the personal-info filter.** Runs of 7 or more digits separated by spaces, dots or dashes look like phone numbers, and so do `YYYY-MM-DD` dates. Write dates as `Dec 28, 2016` and big numbers with commas (`dot()`). A blocked reply only shows up as a `[safety]` console warning.
-- **`!mute` uses Discord timeouts.** The bot needs the **Timeout Members** permission, and Discord won't time out anyone whose highest role is above the bot's or who is the server owner. Failures are only logged.
 - **`replied to` parsing** relies on bot image attachments being named `<IGN>.png`. Renaming that breaks reply prefixes, and it also breaks the other-bridge relay, which reads `attachment.description`.
 
 ## Hardcoded values that belong in config
